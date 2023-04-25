@@ -1,19 +1,14 @@
 import React from "react";
 import "./App.css";
-import { Spinner } from "@chakra-ui/react";
+import SearchAndFilter from "./components/SearchAndFilter";
+import HeaderBar from "./components/HeaderBar";
 
 function App() {
   return (
-    <>
-      <div>Hello from App</div>
-      <Spinner
-        thickness="4px"
-        speed="0.65s"
-        emptyColor="gray.200"
-        color="blue.500"
-        size="xl"
-      />
-    </>
+    <React.Fragment>
+      <HeaderBar />
+      <SearchAndFilter />
+    </React.Fragment>
   );
 }
 
