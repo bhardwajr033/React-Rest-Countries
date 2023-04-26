@@ -51,10 +51,9 @@ async function fetchCountryDetails() {
 function App() {
   const [fetchedCountryData, setFetchedCountryData] = useState({});
   const [countryData, setCountryData] = useState({});
-  const [filteredByRegionData, setFilteredByRegionData] = useState({});
   const [isDataFetched, setIsDataFetched] = useState(false);
   const [lastSearchValue, setLastSearchValue] = useState("");
-  const [lastFilterRegionValue, setLastFilterRegionValue] = useState("");
+  const [lastFilterRegionValue, setLastFilterRegionValue] = useState(null);
   const [subRegions, setSubRegions] = useState([]);
   const [lastFilterSubRegionValue, setLastFilterSubRegionValue] = useState("");
 
@@ -65,8 +64,8 @@ function App() {
       if (data) {
         setFetchedCountryData(data);
         setCountryData(data);
-        setFilteredByRegionData(data);
         setIsDataFetched(true);
+        setLastFilterRegionValue("");
       }
     })();
   }, []);
@@ -80,15 +79,16 @@ function App() {
 
     setLastSearchValue(searchValue);
 
-    if (searchValue === "") {
-      setCountryData(fetchedCountryData);
-      return;
-    }
-
     const countriesDetails = Object.values(fetchedCountryData);
     const searchedCountries = countriesDetails
-      .filter((countryDetail) =>
-        countryDetail.name.toLowerCase().includes(searchValue)
+      .filter(
+        (countryDetail) =>
+          (countryDetail.name.toLowerCase().includes(searchValue) ||
+            searchValue === "") &&
+          (countryDetail.region === lastFilterRegionValue ||
+            lastFilterRegionValue === "") &&
+          (countryDetail.subregion === lastFilterSubRegionValue ||
+            lastFilterSubRegionValue === "")
       )
       .reduce((acc, countryDetail) => {
         acc[countryDetail.name] = countryDetail;
@@ -107,35 +107,38 @@ function App() {
 
     setLastFilterRegionValue(filterValue);
 
-    if (filterValue === "") {
-      setCountryData(fetchedCountryData);
-      return;
-    }
-
     const countriesDetails = Object.values(fetchedCountryData);
     const filteredCountries = countriesDetails
-      .filter((countryDetail) => countryDetail.region === filterValue)
+      .filter(
+        (countryDetail) =>
+          (countryDetail.region === filterValue || filterValue === "") &&
+          (countryDetail.name.toLowerCase().includes(lastSearchValue) ||
+            lastSearchValue === "")
+      )
       .reduce((acc, countryDetail) => {
         acc[countryDetail.name] = countryDetail;
         return acc;
       }, {});
 
     setCountryData(filteredCountries);
-    setFilteredByRegionData(filteredCountries);
+    setLastFilterSubRegionValue("");
   };
 
   // Update Sub-Region Values
   useEffect(() => {
-    const subRegionsPresent = Object.values(countryData).reduce(
-      (acc, countryDetail) => {
+    const subRegionsPresent = Object.values(fetchedCountryData)
+      .filter(
+        (countryData) =>
+          countryData.region === lastFilterRegionValue ||
+          lastFilterRegionValue === ""
+      )
+      .reduce((acc, countryDetail) => {
         const subregion = countryDetail.subregion;
         if (!acc.includes(subregion)) {
           acc.push(subregion);
         }
         return acc;
-      },
-      []
-    );
+      }, []);
     setSubRegions(subRegionsPresent);
   }, [lastFilterRegionValue]);
 
@@ -148,20 +151,22 @@ function App() {
 
     setLastFilterSubRegionValue(filterValue);
 
-    if (filterValue === "") {
-      setCountryData(filteredByRegionData);
-      return;
-    }
-
-    const countriesDetails = Object.values(filteredByRegionData);
-    const searchedCountries = countriesDetails
-      .filter((countryDetail) => countryDetail.subregion === filterValue)
+    const countriesDetails = Object.values(fetchedCountryData);
+    const filteredCountries = countriesDetails
+      .filter(
+        (countryDetail) =>
+          (countryDetail.subregion === filterValue || filterValue === "") &&
+          (countryDetail.name.toLowerCase().includes(lastSearchValue) ||
+            lastSearchValue === "") &&
+          (countryDetail.region === lastFilterRegionValue ||
+            lastFilterRegionValue === "")
+      )
       .reduce((acc, countryDetail) => {
         acc[countryDetail.name] = countryDetail;
         return acc;
       }, {});
 
-    setCountryData(searchedCountries);
+    setCountryData(filteredCountries);
   };
 
   return (

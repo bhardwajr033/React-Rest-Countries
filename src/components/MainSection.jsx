@@ -14,7 +14,7 @@ function MainSection({ countryData, isDataFetched }) {
   const countryCards = Object.values(countryData).map((countryCard) => {
     return (
       <WrapItem key={countryCard.name} width={{ base: "100%", md: "22%" }}>
-        <CountryCard countryDetails={countryCard} />;
+        <CountryCard countryDetails={countryCard} />
       </WrapItem>
     );
   });
