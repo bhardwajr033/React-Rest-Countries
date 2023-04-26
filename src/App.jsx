@@ -51,15 +51,21 @@ async function fetchCountryDetails() {
 function App() {
   const [fetchedCountryData, setFetchedCountryData] = useState({});
   const [countryData, setCountryData] = useState({});
+  const [filteredByRegionData, setFilteredByRegionData] = useState({});
   const [isDataFetched, setIsDataFetched] = useState(false);
   const [lastSearchValue, setLastSearchValue] = useState("");
+  const [lastFilterRegionValue, setLastFilterRegionValue] = useState("");
+  const [subRegions, setSubRegions] = useState([]);
+  const [lastFilterSubRegionValue, setLastFilterSubRegionValue] = useState("");
 
+  // Fetch Data
   useEffect(() => {
     (async () => {
       const data = await fetchCountryDetails();
       if (data) {
         setFetchedCountryData(data);
         setCountryData(data);
+        setFilteredByRegionData(data);
         setIsDataFetched(true);
       }
     })();
@@ -76,6 +82,7 @@ function App() {
 
     if (searchValue === "") {
       setCountryData(fetchedCountryData);
+      return;
     }
 
     const countriesDetails = Object.values(fetchedCountryData);
@@ -91,10 +98,81 @@ function App() {
     setCountryData(searchedCountries);
   };
 
+  const handleFilterbyRegion = (event) => {
+    const filterValue = event.target.value;
+
+    if (filterValue === lastFilterRegionValue) {
+      return;
+    }
+
+    setLastFilterRegionValue(filterValue);
+
+    if (filterValue === "") {
+      setCountryData(fetchedCountryData);
+      return;
+    }
+
+    const countriesDetails = Object.values(fetchedCountryData);
+    const filteredCountries = countriesDetails
+      .filter((countryDetail) => countryDetail.region === filterValue)
+      .reduce((acc, countryDetail) => {
+        acc[countryDetail.name] = countryDetail;
+        return acc;
+      }, {});
+
+    setCountryData(filteredCountries);
+    setFilteredByRegionData(filteredCountries);
+  };
+
+  // Update Sub-Region Values
+  useEffect(() => {
+    const subRegionsPresent = Object.values(countryData).reduce(
+      (acc, countryDetail) => {
+        const subregion = countryDetail.subregion;
+        if (!acc.includes(subregion)) {
+          acc.push(subregion);
+        }
+        return acc;
+      },
+      []
+    );
+    setSubRegions(subRegionsPresent);
+  }, [lastFilterRegionValue]);
+
+  const handleFilterbySubregion = (event) => {
+    const filterValue = event.target.value;
+
+    if (filterValue === lastFilterSubRegionValue) {
+      return;
+    }
+
+    setLastFilterSubRegionValue(filterValue);
+
+    if (filterValue === "") {
+      setCountryData(filteredByRegionData);
+      return;
+    }
+
+    const countriesDetails = Object.values(filteredByRegionData);
+    const searchedCountries = countriesDetails
+      .filter((countryDetail) => countryDetail.subregion === filterValue)
+      .reduce((acc, countryDetail) => {
+        acc[countryDetail.name] = countryDetail;
+        return acc;
+      }, {});
+
+    setCountryData(searchedCountries);
+  };
+
   return (
     <React.Fragment>
       <HeaderBar />
-      <SearchAndFilter handleSearch={handleSearch} />
+      <SearchAndFilter
+        handleSearch={handleSearch}
+        handleFilterbyRegion={handleFilterbyRegion}
+        subRegions={subRegions}
+        handleFilterbySubregion={handleFilterbySubregion}
+      />
       <MainSection isDataFetched={isDataFetched} countryData={countryData} />
     </React.Fragment>
   );

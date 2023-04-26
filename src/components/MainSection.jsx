@@ -2,9 +2,13 @@ import { Text, Wrap, WrapItem } from "@chakra-ui/react";
 import React from "react";
 import CountryCard from "./CountryCard";
 
-function MainSection({ countryData , isDataFetched }) {
+function MainSection({ countryData, isDataFetched }) {
   if (Object.values(countryData).length === 0) {
-    return <Text as="b" size="lg" px="40%" py="4rem">{isDataFetched ? "No Countries Found" : "Countries Loading..."}</Text>;
+    return (
+      <Text as="b" size="lg" px="40%" py="4rem">
+        {isDataFetched ? "No Countries Found" : "Countries Loading..."}
+      </Text>
+    );
   }
 
   const countryCards = Object.values(countryData).map((countryCard) => {
