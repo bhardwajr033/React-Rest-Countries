@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import "./App.css";
 import SearchAndFilter from "./components/SearchAndFilter";
 import HeaderBar from "./components/HeaderBar";
 import MainSection from "./components/MainSection";
@@ -15,7 +14,9 @@ async function fetchCountryDetails() {
     const countriesDetails = countryData.reduce((acc, country) => {
       acc[country.name.common] = {
         name: country.name.common,
-        population: country.population.toLocaleString("en-US"),
+        population: country.population,
+        populationString: country.population.toLocaleString("en-US"),
+        area: country.area,
         region: country.region,
         capital: (country.capital || ["Not Found"])[0],
         flag: country.flags.svg,
@@ -50,12 +51,15 @@ async function fetchCountryDetails() {
 
 function App() {
   const [fetchedCountryData, setFetchedCountryData] = useState({});
-  const [countryData, setCountryData] = useState({});
+  const [countryData, setCountryData] = useState([]);
   const [isDataFetched, setIsDataFetched] = useState(false);
   const [lastSearchValue, setLastSearchValue] = useState("");
   const [lastFilterRegionValue, setLastFilterRegionValue] = useState(null);
   const [subRegions, setSubRegions] = useState([]);
   const [lastFilterSubRegionValue, setLastFilterSubRegionValue] = useState("");
+  const [isSortByPopulationActive, setIsSortByPopulationActive] =
+    useState(false);
+  const [isSortByTotalAreaActive, setIsSortByTotalAreaActive] = useState(false);
 
   // Fetch Data
   useEffect(() => {
@@ -63,7 +67,9 @@ function App() {
       const data = await fetchCountryDetails();
       if (data) {
         setFetchedCountryData(data);
-        setCountryData(data);
+        setCountryData(
+          Object.values(data).sort((a, b) => (a.name > b.name ? 1 : -1))
+        );
         setIsDataFetched(true);
         setLastFilterRegionValue("");
       }
@@ -79,21 +85,35 @@ function App() {
 
     setLastSearchValue(searchValue);
 
-    const countriesDetails = Object.values(fetchedCountryData);
-    const searchedCountries = countriesDetails
-      .filter(
-        (countryDetail) =>
-          (countryDetail.name.toLowerCase().includes(searchValue) ||
-            searchValue === "") &&
-          (countryDetail.region === lastFilterRegionValue ||
-            lastFilterRegionValue === "") &&
-          (countryDetail.subregion === lastFilterSubRegionValue ||
-            lastFilterSubRegionValue === "")
-      )
-      .reduce((acc, countryDetail) => {
-        acc[countryDetail.name] = countryDetail;
-        return acc;
-      }, {});
+    let searchedCountries = Object.values(fetchedCountryData).filter(
+      (countryDetail) =>
+        (countryDetail.name.toLowerCase().includes(searchValue) ||
+          searchValue === "") &&
+        (countryDetail.region === lastFilterRegionValue ||
+          lastFilterRegionValue === "") &&
+        (countryDetail.subregion === lastFilterSubRegionValue ||
+          lastFilterSubRegionValue === "")
+    );
+
+    if (isSortByPopulationActive) {
+      searchedCountries = sortCountryCardsByKey(
+        searchedCountries,
+        "population",
+        false
+      );
+    } else if (isSortByTotalAreaActive) {
+      searchedCountries = sortCountryCardsByKey(
+        searchedCountries,
+        "area",
+        false
+      );
+    } else {
+      searchedCountries = sortCountryCardsByKey(
+        searchedCountries,
+        "area",
+        true
+      );
+    }
 
     setCountryData(searchedCountries);
   };
@@ -107,18 +127,32 @@ function App() {
 
     setLastFilterRegionValue(filterValue);
 
-    const countriesDetails = Object.values(fetchedCountryData);
-    const filteredCountries = countriesDetails
-      .filter(
-        (countryDetail) =>
-          (countryDetail.region === filterValue || filterValue === "") &&
-          (countryDetail.name.toLowerCase().includes(lastSearchValue) ||
-            lastSearchValue === "")
-      )
-      .reduce((acc, countryDetail) => {
-        acc[countryDetail.name] = countryDetail;
-        return acc;
-      }, {});
+    let filteredCountries = Object.values(fetchedCountryData).filter(
+      (countryDetail) =>
+        (countryDetail.region === filterValue || filterValue === "") &&
+        (countryDetail.name.toLowerCase().includes(lastSearchValue) ||
+          lastSearchValue === "")
+    );
+
+    if (isSortByPopulationActive) {
+      filteredCountries = sortCountryCardsByKey(
+        filteredCountries,
+        "population",
+        false
+      );
+    } else if (isSortByTotalAreaActive) {
+      filteredCountries = sortCountryCardsByKey(
+        filteredCountries,
+        "area",
+        false
+      );
+    } else {
+      filteredCountries = sortCountryCardsByKey(
+        filteredCountries,
+        "area",
+        true
+      );
+    }
 
     setCountryData(filteredCountries);
     setLastFilterSubRegionValue("");
@@ -151,23 +185,72 @@ function App() {
 
     setLastFilterSubRegionValue(filterValue);
 
-    const countriesDetails = Object.values(fetchedCountryData);
-    const filteredCountries = countriesDetails
-      .filter(
-        (countryDetail) =>
-          (countryDetail.subregion === filterValue || filterValue === "") &&
-          (countryDetail.name.toLowerCase().includes(lastSearchValue) ||
-            lastSearchValue === "") &&
-          (countryDetail.region === lastFilterRegionValue ||
-            lastFilterRegionValue === "")
-      )
-      .reduce((acc, countryDetail) => {
-        acc[countryDetail.name] = countryDetail;
-        return acc;
-      }, {});
+    let filteredCountries = Object.values(fetchedCountryData).filter(
+      (countryDetail) =>
+        (countryDetail.subregion === filterValue || filterValue === "") &&
+        (countryDetail.name.toLowerCase().includes(lastSearchValue) ||
+          lastSearchValue === "") &&
+        (countryDetail.region === lastFilterRegionValue ||
+          lastFilterRegionValue === "")
+    );
+
+    if (isSortByPopulationActive) {
+      filteredCountries = sortCountryCardsByKey(
+        filteredCountries,
+        "population",
+        false
+      );
+    } else if (isSortByTotalAreaActive) {
+      filteredCountries = sortCountryCardsByKey(
+        filteredCountries,
+        "area",
+        false
+      );
+    } else {
+      filteredCountries = sortCountryCardsByKey(
+        filteredCountries,
+        "area",
+        true
+      );
+    }
 
     setCountryData(filteredCountries);
   };
+
+  const handleSortByTotalArea = (isActive) => {
+    setIsSortByTotalAreaActive(!isSortByTotalAreaActive);
+    setIsSortByPopulationActive(false);
+
+    let sortedData = [];
+
+    if (isActive) {
+      sortedData = sortCountryCardsByKey(countryData, "area", false);
+    } else {
+      sortedData = sortCountryCardsByKey(countryData, "name", true);
+    }
+
+    setCountryData(sortedData);
+  };
+
+  const handleSortByPopulation = (isActive) => {
+    setIsSortByPopulationActive(!isSortByPopulationActive);
+    setIsSortByTotalAreaActive(false);
+    let sortedData = [];
+
+    if (isActive) {
+      sortedData = sortCountryCardsByKey(countryData, "population", false);
+    } else {
+      sortedData = sortCountryCardsByKey(countryData, "name", true);
+    }
+
+    setCountryData(sortedData);
+  };
+
+  function sortCountryCardsByKey(data, key, ascending) {
+    return data.sort((a, b) =>
+      a[key] > b[key] ? (ascending ? 1 : -1) : ascending ? -1 : 1
+    );
+  }
 
   return (
     <React.Fragment>
@@ -177,6 +260,10 @@ function App() {
         handleFilterbyRegion={handleFilterbyRegion}
         subRegions={subRegions}
         handleFilterbySubregion={handleFilterbySubregion}
+        handleSortByTotalArea={handleSortByTotalArea}
+        handleSortByPopulation={handleSortByPopulation}
+        isSortByTotalAreaActive={isSortByTotalAreaActive}
+        isSortByPopulationActive={isSortByPopulationActive}
       />
       <MainSection isDataFetched={isDataFetched} countryData={countryData} />
     </React.Fragment>

@@ -24,7 +24,7 @@ function CountryCard({ countryDetails }) {
           <Text as="b">
             Population:{" "}
             <span style={{ fontWeight: "400" }}>
-              {countryDetails.population}
+              {countryDetails.populationString}
             </span>
           </Text>
           <Text as="b">

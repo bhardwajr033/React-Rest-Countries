@@ -1,17 +1,32 @@
-import { Text, Wrap, WrapItem } from "@chakra-ui/react";
+import { Text, Flex, Spinner, Wrap, WrapItem } from "@chakra-ui/react";
 import React from "react";
 import CountryCard from "./CountryCard";
 
 function MainSection({ countryData, isDataFetched }) {
-  if (Object.values(countryData).length === 0) {
+  if (countryData.length === 0) {
+    if (isDataFetched) {
+      return (
+        <Flex align="center" justify="center" h="10rem">
+          <Text as="b" fontSize="2rem">
+            "No Countries Found!"
+          </Text>
+        </Flex>
+      );
+    }
     return (
-      <Text as="b" size="lg" px="40%" py="4rem">
-        {isDataFetched ? "No Countries Found" : "Countries Loading..."}
-      </Text>
+      <Flex align="center" justify="center" h="10rem">
+        <Spinner
+          thickness="4px"
+          speed="0.65s"
+          emptyColor="gray.200"
+          color="blue.500"
+          size="xl"
+        />
+      </Flex>
     );
   }
 
-  const countryCards = Object.values(countryData).map((countryCard) => {
+  const countryCards = countryData.map((countryCard) => {
     return (
       <WrapItem key={countryCard.name} width={{ base: "100%", md: "22%" }}>
         <CountryCard countryDetails={countryCard} />
