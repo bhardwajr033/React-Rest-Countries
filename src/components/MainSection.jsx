@@ -1,20 +1,24 @@
-import { Flex } from "@chakra-ui/react";
+import { Text, Wrap, WrapItem } from "@chakra-ui/react";
 import React from "react";
 import CountryCard from "./CountryCard";
 
-const countryDetails = {
-  name: "India",
-  population: "1,400,000,000",
-  region: "Asia",
-  capital: "New Delhi",
-  flag: "src/assets/images/No_flag.svg",
-};
+function MainSection({ countryData }) {
+  if (JSON.stringify(countryData) === "{}") {
+    return <Text as="b" size="lg" px="40%" py="4rem">Loading Content...</Text>;
+  }
 
-function MainSection() {
+  const countryCards = Object.values(countryData).map((countryCard) => {
+    return (
+      <WrapItem key={countryCard.name} width={{ base: "100%", md: "22%" }}>
+        <CountryCard countryDetails={countryCard} />;
+      </WrapItem>
+    );
+  });
+
   return (
-    <Flex p="1rem">
-      <CountryCard countryDetails={countryDetails} />
-    </Flex>
+    <Wrap p="1rem" spacing="3%">
+      {countryCards}
+    </Wrap>
   );
 }
 
