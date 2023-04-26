@@ -14,12 +14,10 @@ const HeaderBar = () => {
         <Heading>Where in the world?</Heading>
       </Box>
       <Spacer />
-      <Link href="#">
         <Flex gap="1rem">
           <i className="bi bi-circle-half"></i>
           <Text fontWeight="bold">Dark Mode</Text>
         </Flex>
-      </Link>
     </Flex>
   );
 };
