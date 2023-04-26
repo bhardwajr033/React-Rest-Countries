@@ -51,6 +51,8 @@ async function fetchCountryDetails() {
 function App() {
   const [fetchedCountryData, setFetchedCountryData] = useState({});
   const [countryData, setCountryData] = useState({});
+  const [isDataFetched, setIsDataFetched] = useState(false);
+  const [lastSearchValue, setLastSearchValue] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -58,15 +60,42 @@ function App() {
       if (data) {
         setFetchedCountryData(data);
         setCountryData(data);
+        setIsDataFetched(true);
       }
     })();
   }, []);
 
+  const handleSearch = (event) => {
+    const searchValue = event.target.value.trim().toLowerCase();
+
+    if (searchValue === lastSearchValue) {
+      return;
+    }
+
+    setLastSearchValue(searchValue);
+
+    if (searchValue === "") {
+      setCountryData(fetchedCountryData);
+    }
+
+    const countriesDetails = Object.values(fetchedCountryData);
+    const searchedCountries = countriesDetails
+      .filter((countryDetail) =>
+        countryDetail.name.toLowerCase().includes(searchValue)
+      )
+      .reduce((acc, countryDetail) => {
+        acc[countryDetail.name] = countryDetail;
+        return acc;
+      }, {});
+
+    setCountryData(searchedCountries);
+  };
+
   return (
     <React.Fragment>
       <HeaderBar />
-      <SearchAndFilter />
-      <MainSection countryData={countryData} />
+      <SearchAndFilter handleSearch={handleSearch} />
+      <MainSection isDataFetched={isDataFetched} countryData={countryData} />
     </React.Fragment>
   );
 }

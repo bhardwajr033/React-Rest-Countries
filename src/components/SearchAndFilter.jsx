@@ -2,7 +2,7 @@ import { Flex } from "@chakra-ui/react";
 import SearchBar from "./SearchBar";
 import FilterBar from "./FilterBar";
 
-function SearchAndFilter() {
+function SearchAndFilter({handleSearch}) {
   return (
     <Flex
       px="1rem"
@@ -10,7 +10,7 @@ function SearchAndFilter() {
       gap={{ base: "1rem", md: "5rem" }}
       flexDirection={{ base: "column", md: "row" }}
     >
-      <SearchBar />
+      <SearchBar handleSearch={handleSearch}/>
       <FilterBar
         placeHolder="Filter by Sub-Region"
         filterOptions={[
