@@ -9,6 +9,8 @@ function CheckBoxBar(props) {
       size="lg"
       isChecked={props.isLandLockedActive}
       onChange={(e) => props.handelChange(e.target.checked)}
+      border="0.5px solid blue"
+      borderRadius="0.5rem"
     >
       {props.checkBoxValue}
     </Checkbox>

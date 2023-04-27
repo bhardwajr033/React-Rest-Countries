@@ -30,12 +30,12 @@ function SearchAndFilter(props) {
       />
       <FilterBar
         handleFilter={props.handleFilterbySubregion}
-        placeHolder="Filter by Sub-Region"
+        placeHolder="Sub-Region"
         filterOptions={props.subRegions}
       />
       <FilterBar
         handleFilter={props.handleFilterbyRegion}
-        placeHolder="Filter by Region"
+        placeHolder="Region"
         filterOptions={["Asia", "Americas", "Africa", "Europe", "Oceania"]}
       />
     </Flex>
