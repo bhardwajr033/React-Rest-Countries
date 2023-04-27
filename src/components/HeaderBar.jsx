@@ -1,6 +1,15 @@
-import { Box, Flex, Heading, Text, Spacer, Link } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Heading,
+  Text,
+  Spacer,
+  useColorMode,
+  Button,
+} from "@chakra-ui/react";
 
 const HeaderBar = () => {
+  const { colorMode, toggleColorMode } = useColorMode();
   return (
     <Flex
       w="100%"
@@ -14,10 +23,17 @@ const HeaderBar = () => {
         <Heading>Where in the world?</Heading>
       </Box>
       <Spacer />
-        <Flex gap="1rem">
-          <i className="bi bi-circle-half"></i>
-          <Text fontWeight="bold">Dark Mode</Text>
-        </Flex>
+      <Flex gap="1rem">
+        <Button
+          onClick={toggleColorMode}
+          colorScheme="teal"
+          variant="outline"
+          width="100%"
+          size="lg"
+        >
+          {colorMode === "light" ? "Dark Mode" : "Light Mode"}
+        </Button>
+      </Flex>
     </Flex>
   );
 };
