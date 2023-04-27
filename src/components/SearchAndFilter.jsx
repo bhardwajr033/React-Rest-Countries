@@ -2,13 +2,14 @@ import { Flex } from "@chakra-ui/react";
 import SearchBar from "./SearchBar";
 import FilterBar from "./FilterBar";
 import SortButton from "./SortButton";
+import CheckBoxBar from "./CheckBoxBar";
 
 function SearchAndFilter(props) {
   return (
     <Flex
       px="1rem"
       py="2rem"
-      gap={{ base: "1.5rem", md: "5rem" }}
+      gap={{ base: "1.5rem", md: "3rem" }}
       flexDirection={{ base: "column", md: "row" }}
     >
       <SearchBar handleSearch={props.handleSearch} />
@@ -21,6 +22,11 @@ function SearchAndFilter(props) {
         handleClick={props.handleSortByTotalArea}
         isActive={props.isSortByTotalAreaActive}
         buttonText="Sort by Total Area"
+      />
+      <CheckBoxBar
+        checkBoxValue={"Landlocked"}
+        isLandLockedActive={props.isLandLockedActive}
+        handelChange={props.handleLandlockedCheckBox}
       />
       <FilterBar
         handleFilter={props.handleFilterbySubregion}

@@ -20,6 +20,7 @@ async function fetchCountryDetails() {
         region: country.region,
         capital: (country.capital || ["Not Found"])[0],
         flag: country.flags.svg,
+        landlocked: country.landlocked,
         //for detail page
         nativeName: Object.values(
           country.name.nativeName || { common: "Not Found" }
@@ -60,6 +61,8 @@ function App() {
   const [isSortByPopulationActive, setIsSortByPopulationActive] =
     useState(false);
   const [isSortByTotalAreaActive, setIsSortByTotalAreaActive] = useState(false);
+  const [isLandLockedActive, setIsLandLockedActive] = useState(false);
+  const [Change, setChange] = useState(0);
 
   // Fetch Data
   useEffect(() => {
@@ -76,6 +79,56 @@ function App() {
     })();
   }, []);
 
+  // Display Country Cards on change
+  useEffect(() => {
+    let countriesDetails = Object.values(fetchedCountryData);
+
+    //filter search
+    countriesDetails = countriesDetails.filter(
+      (countryDetail) =>
+        countryDetail.name.toLowerCase().includes(lastSearchValue) ||
+        lastSearchValue === ""
+    );
+
+    //filter region
+    countriesDetails = countriesDetails.filter(
+      (countryDetail) =>
+        countryDetail.region === lastFilterRegionValue ||
+        lastFilterRegionValue === ""
+    );
+
+    //filter sub-region
+    countriesDetails = countriesDetails.filter(
+      (countryDetail) =>
+        countryDetail.subregion === lastFilterSubRegionValue ||
+        lastFilterSubRegionValue === ""
+    );
+
+    //filter landlocked
+    if (isLandLockedActive) {
+      countriesDetails = countriesDetails.filter(
+        (countryDetail) => countryDetail.landlocked
+      );
+    }
+
+    //sort by name(default) or population or total area
+    if (isSortByPopulationActive) {
+      countriesDetails = countriesDetails.sort((a, b) =>
+        a.population > b.population ? -1 : 1
+      );
+    } else if (isSortByTotalAreaActive) {
+      countriesDetails = countriesDetails.sort((a, b) =>
+        a.area > b.area ? -1 : 1
+      );
+    } else {
+      countriesDetails = countriesDetails.sort((a, b) =>
+        a.name > b.name ? 1 : -1
+      );
+    }
+
+    setCountryData(countriesDetails);
+  }, [Change]);
+
   const handleSearch = (event) => {
     const searchValue = event.target.value.trim().toLowerCase();
 
@@ -85,37 +138,7 @@ function App() {
 
     setLastSearchValue(searchValue);
 
-    let searchedCountries = Object.values(fetchedCountryData).filter(
-      (countryDetail) =>
-        (countryDetail.name.toLowerCase().includes(searchValue) ||
-          searchValue === "") &&
-        (countryDetail.region === lastFilterRegionValue ||
-          lastFilterRegionValue === "") &&
-        (countryDetail.subregion === lastFilterSubRegionValue ||
-          lastFilterSubRegionValue === "")
-    );
-
-    if (isSortByPopulationActive) {
-      searchedCountries = sortCountryCardsByKey(
-        searchedCountries,
-        "population",
-        false
-      );
-    } else if (isSortByTotalAreaActive) {
-      searchedCountries = sortCountryCardsByKey(
-        searchedCountries,
-        "area",
-        false
-      );
-    } else {
-      searchedCountries = sortCountryCardsByKey(
-        searchedCountries,
-        "area",
-        true
-      );
-    }
-
-    setCountryData(searchedCountries);
+    setChange(Change + 1);
   };
 
   const handleFilterbyRegion = (event) => {
@@ -125,37 +148,11 @@ function App() {
       return;
     }
 
+    setLastFilterSubRegionValue("");
+
     setLastFilterRegionValue(filterValue);
 
-    let filteredCountries = Object.values(fetchedCountryData).filter(
-      (countryDetail) =>
-        (countryDetail.region === filterValue || filterValue === "") &&
-        (countryDetail.name.toLowerCase().includes(lastSearchValue) ||
-          lastSearchValue === "")
-    );
-
-    if (isSortByPopulationActive) {
-      filteredCountries = sortCountryCardsByKey(
-        filteredCountries,
-        "population",
-        false
-      );
-    } else if (isSortByTotalAreaActive) {
-      filteredCountries = sortCountryCardsByKey(
-        filteredCountries,
-        "area",
-        false
-      );
-    } else {
-      filteredCountries = sortCountryCardsByKey(
-        filteredCountries,
-        "area",
-        true
-      );
-    }
-
-    setCountryData(filteredCountries);
-    setLastFilterSubRegionValue("");
+    setChange(Change + 1);
   };
 
   // Update Sub-Region Values
@@ -185,72 +182,28 @@ function App() {
 
     setLastFilterSubRegionValue(filterValue);
 
-    let filteredCountries = Object.values(fetchedCountryData).filter(
-      (countryDetail) =>
-        (countryDetail.subregion === filterValue || filterValue === "") &&
-        (countryDetail.name.toLowerCase().includes(lastSearchValue) ||
-          lastSearchValue === "") &&
-        (countryDetail.region === lastFilterRegionValue ||
-          lastFilterRegionValue === "")
-    );
-
-    if (isSortByPopulationActive) {
-      filteredCountries = sortCountryCardsByKey(
-        filteredCountries,
-        "population",
-        false
-      );
-    } else if (isSortByTotalAreaActive) {
-      filteredCountries = sortCountryCardsByKey(
-        filteredCountries,
-        "area",
-        false
-      );
-    } else {
-      filteredCountries = sortCountryCardsByKey(
-        filteredCountries,
-        "area",
-        true
-      );
-    }
-
-    setCountryData(filteredCountries);
+    setChange(Change + 1);
   };
 
   const handleSortByTotalArea = (isActive) => {
     setIsSortByTotalAreaActive(!isSortByTotalAreaActive);
     setIsSortByPopulationActive(false);
 
-    let sortedData = [];
-
-    if (isActive) {
-      sortedData = sortCountryCardsByKey(countryData, "area", false);
-    } else {
-      sortedData = sortCountryCardsByKey(countryData, "name", true);
-    }
-
-    setCountryData(sortedData);
+    setChange(Change + 1);
   };
 
   const handleSortByPopulation = (isActive) => {
     setIsSortByPopulationActive(!isSortByPopulationActive);
     setIsSortByTotalAreaActive(false);
-    let sortedData = [];
 
-    if (isActive) {
-      sortedData = sortCountryCardsByKey(countryData, "population", false);
-    } else {
-      sortedData = sortCountryCardsByKey(countryData, "name", true);
-    }
-
-    setCountryData(sortedData);
+    setChange(Change + 1);
   };
 
-  function sortCountryCardsByKey(data, key, ascending) {
-    return data.sort((a, b) =>
-      a[key] > b[key] ? (ascending ? 1 : -1) : ascending ? -1 : 1
-    );
-  }
+  const handleLandlockedCheckBox = (isActive) => {
+    setIsLandLockedActive(!isLandLockedActive);
+
+    setChange(Change + 1);
+  };
 
   return (
     <React.Fragment>
@@ -264,6 +217,8 @@ function App() {
         handleSortByPopulation={handleSortByPopulation}
         isSortByTotalAreaActive={isSortByTotalAreaActive}
         isSortByPopulationActive={isSortByPopulationActive}
+        isLandLockedActive={isLandLockedActive}
+        handleLandlockedCheckBox={handleLandlockedCheckBox}
       />
       <MainSection isDataFetched={isDataFetched} countryData={countryData} />
     </React.Fragment>
